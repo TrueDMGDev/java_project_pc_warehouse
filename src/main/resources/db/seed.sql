@@ -1,0 +1,2 @@
+-- Legacy manual seed entry point.
+-- Flyway now manages seed data from classpath:db/migration/V2__seed_data.sql.

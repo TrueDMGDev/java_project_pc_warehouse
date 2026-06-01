@@ -1,0 +1,751 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.pcwarehouse.controller.MainController"
+            styleClass="root-pane">
+    <top>
+        <VBox spacing="16.0" styleClass="shell-header">
+            <padding>
+                <Insets top="24.0" right="24.0" bottom="20.0" left="24.0"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="18.0">
+                <VBox spacing="6.0">
+                    <Label text="PC Warehouse Control" styleClass="app-title"/>
+                    <Label text="Warehouse transfers, inventory movement, and role-based administration in one shared desktop workspace."
+                           styleClass="app-subtitle"
+                           wrapText="true"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <VBox alignment="CENTER_RIGHT" spacing="6.0">
+                    <Label text="Current Page" styleClass="field-label"/>
+                    <Label fx:id="activePageLabel" styleClass="status-pill-dark" text="Overview"/>
+                </VBox>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="control-strip">
+                <VBox spacing="6.0">
+                    <Label text="Signed In User" styleClass="field-label"/>
+                    <Label fx:id="currentUserLabel" styleClass="status-pill-dark" text="Loading user..."/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="dataSourceLabel" styleClass="status-pill" text="Data source: pending"/>
+                <Label fx:id="refreshStatusLabel" styleClass="status-pill" text="Last refresh: pending"/>
+                <Button mnemonicParsing="false" onAction="#handleManualRefresh" text="Refresh Now"/>
+                <VBox spacing="6.0" styleClass="db-status-box">
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <Label fx:id="databaseStatusLabel" styleClass="db-status-title" text="Database status"/>
+                        <Button fx:id="retryConnectionButton" mnemonicParsing="false" onAction="#handleRetryConnection" text="Retry Connection"/>
+                    </HBox>
+                    <Label fx:id="databaseFailureReasonLabel" styleClass="db-status-detail" text="Waiting for connection check..." wrapText="true"/>
+                </VBox>
+                <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout"/>
+            </HBox>
+        </VBox>
+    </top>
+    <left>
+        <VBox spacing="18.0" styleClass="nav-column">
+            <padding>
+                <Insets top="24.0" right="16.0" bottom="24.0" left="24.0"/>
+            </padding>
+            <VBox spacing="10.0" styleClass="nav-card">
+                <Label text="Workspace" styleClass="section-title"/>
+                <Button fx:id="overviewNavButton" mnemonicParsing="false" onAction="#handleShowOverviewPage" styleClass="nav-button" text="Overview"/>
+                <Button fx:id="operationsNavButton" mnemonicParsing="false" onAction="#handleShowOperationsPage" styleClass="nav-button" text="Operations"/>
+                <Button fx:id="requestsNavButton" mnemonicParsing="false" onAction="#handleShowRequestsPage" styleClass="nav-button" text="Requests"/>
+                <Button fx:id="catalogNavButton" mnemonicParsing="false" onAction="#handleShowCatalogPage" styleClass="nav-button" text="Catalog"/>
+                <Button fx:id="reportsNavButton" mnemonicParsing="false" onAction="#handleShowReportsPage" styleClass="nav-button" text="Reports"/>
+                <Button fx:id="adminNavButton" mnemonicParsing="false" onAction="#handleShowAdminPage" styleClass="nav-button" text="Admin"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <StackPane styleClass="content-shell">
+            <children>
+                <ScrollPane fx:id="overviewScrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="main-scroll">
+                    <content>
+                        <VBox fx:id="overviewPage" spacing="18.0" styleClass="page-column">
+                            <padding>
+                                <Insets top="24.0" right="24.0" bottom="24.0" left="8.0"/>
+                            </padding>
+                            <HBox spacing="16.0">
+                                <VBox spacing="6.0" styleClass="metric-card" HBox.hgrow="ALWAYS">
+                                    <Label text="Tracked Stock" styleClass="metric-title"/>
+                                    <Label fx:id="stockMetricValueLabel" styleClass="metric-value" text="0 units"/>
+                                    <Label fx:id="stockMetricNoteLabel" maxWidth="Infinity" styleClass="metric-note" text="Loading..." wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="6.0" styleClass="metric-card" HBox.hgrow="ALWAYS">
+                                    <Label text="Pending Requests" styleClass="metric-title"/>
+                                    <Label fx:id="requestMetricValueLabel" styleClass="metric-value" text="0"/>
+                                    <Label fx:id="requestMetricNoteLabel" maxWidth="Infinity" styleClass="metric-note" text="Loading..." wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="6.0" styleClass="metric-card" HBox.hgrow="ALWAYS">
+                                    <Label text="Supply + Dispatch Today" styleClass="metric-title"/>
+                                    <Label fx:id="operationsMetricValueLabel" styleClass="metric-value" text="0"/>
+                                    <Label fx:id="operationsMetricNoteLabel" maxWidth="Infinity" styleClass="metric-note" text="Loading..." wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="6.0" styleClass="metric-card" HBox.hgrow="ALWAYS">
+                                    <Label text="Visible Movements" styleClass="metric-title"/>
+                                    <Label fx:id="movementMetricValueLabel" styleClass="metric-value" text="0"/>
+                                    <Label fx:id="movementMetricNoteLabel" maxWidth="Infinity" styleClass="metric-note" text="Loading..." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+                <ScrollPane fx:id="operationsScrollPane" fitToWidth="true" hbarPolicy="NEVER" managed="false" styleClass="main-scroll" visible="false">
+                    <content>
+                        <VBox fx:id="operationsPage" managed="false" spacing="18.0" styleClass="page-column" visible="false">
+                            <padding>
+                                <Insets top="24.0" right="24.0" bottom="24.0" left="8.0"/>
+                            </padding>
+                            <VBox spacing="12.0" styleClass="card">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <Label text="Supply Stock" styleClass="section-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label text="Add one or more incoming products, then record them together." styleClass="table-summary"/>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0">
+                                        <Label text="Warehouse" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="supplyWarehouseSelector" prefWidth="170.0"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Product Search" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="supplyProductSelector" editable="true" promptText="Search existing products"/>
+                                    </VBox>
+                                    <VBox alignment="BOTTOM_LEFT" spacing="6.0">
+                                        <CheckBox fx:id="supplyNewProductCheckBox" mnemonicParsing="false" onAction="#handleToggleNewSupplyProduct" text="New product to catalog"/>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                        <Label text="Quantity" styleClass="stock-form-label"/>
+                                        <TextField fx:id="supplyQuantityField" prefWidth="110.0" promptText="Qty"/>
+                                    </VBox>
+                                </HBox>
+                                <VBox fx:id="supplyNewProductFields" managed="false" spacing="10.0" visible="false">
+                                    <HBox spacing="10.0">
+                                        <VBox spacing="6.0">
+                                            <Label text="New Code" styleClass="stock-form-label"/>
+                                            <TextField fx:id="supplyNewProductCodeField" prefWidth="135.0" promptText="SKU / code"/>
+                                        </VBox>
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="New Product Name" styleClass="stock-form-label"/>
+                                            <TextField fx:id="supplyNewProductNameField" promptText="Model name"/>
+                                        </VBox>
+                                        <VBox spacing="6.0">
+                                            <Label text="Unit" styleClass="stock-form-label"/>
+                                            <TextField fx:id="supplyNewProductUnitField" prefWidth="90.0" promptText="pcs"/>
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Manufacturer" styleClass="stock-form-label"/>
+                                            <ComboBox fx:id="supplyNewProductManufacturerSelector"/>
+                                        </VBox>
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Category" styleClass="stock-form-label"/>
+                                            <ComboBox fx:id="supplyNewProductCategorySelector"/>
+                                        </VBox>
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Description" styleClass="stock-form-label"/>
+                                            <TextField fx:id="supplyNewProductDescriptionField" promptText="Optional description"/>
+                                        </VBox>
+                                    </HBox>
+                                </VBox>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Supplier" styleClass="stock-form-label"/>
+                                        <TextField fx:id="supplySupplierField" promptText="Supplier name"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Reference / Note" styleClass="stock-form-label"/>
+                                        <TextField fx:id="supplyNoteField" promptText="Optional supply note"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <Button fx:id="addSupplyLineButton" mnemonicParsing="false" onAction="#handleAddSupplyLine" text="Add Supply Line"/>
+                                    <Button fx:id="removeSupplyLineButton" mnemonicParsing="false" onAction="#handleRemoveSupplyLine" text="Remove Line"/>
+                                    <Button fx:id="clearSupplyDraftButton" mnemonicParsing="false" onAction="#handleClearSupplyDraft" text="Clear Draft"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button fx:id="recordSupplyButton" mnemonicParsing="false" onAction="#handleRecordSupply" text="Record Supply"/>
+                                </HBox>
+                                <TableView fx:id="supplyDraftTable" prefHeight="150.0">
+                                    <columns>
+                                        <TableColumn fx:id="supplyDraftCodeColumn" prefWidth="135.0" text="Code"/>
+                                        <TableColumn fx:id="supplyDraftProductColumn" prefWidth="360.0" text="Product"/>
+                                        <TableColumn fx:id="supplyDraftQuantityColumn" prefWidth="90.0" text="Qty"/>
+                                    </columns>
+                                </TableView>
+                                <Label fx:id="supplyStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                            </VBox>
+                            <VBox spacing="12.0" styleClass="card">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <Label text="Dispatch Stock" styleClass="section-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="dispatchInventorySummaryLabel" styleClass="table-summary" text="Search current warehouse inventory."/>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0">
+                                        <Label text="Warehouse" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="dispatchWarehouseSelector" prefWidth="180.0"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Inventory Search" styleClass="stock-form-label"/>
+                                        <TextField fx:id="dispatchInventorySearchField" promptText="Search by code or product name"/>
+                                    </VBox>
+                                </HBox>
+                                <TableView fx:id="dispatchInventoryTable" prefHeight="190.0">
+                                    <columns>
+                                        <TableColumn fx:id="dispatchInventoryCodeColumn" prefWidth="125.0" text="Code"/>
+                                        <TableColumn fx:id="dispatchInventoryProductColumn" prefWidth="310.0" text="Product"/>
+                                        <TableColumn fx:id="dispatchInventoryManufacturerColumn" prefWidth="135.0" text="Manufacturer"/>
+                                        <TableColumn fx:id="dispatchInventoryCategoryColumn" prefWidth="110.0" text="Category"/>
+                                        <TableColumn fx:id="dispatchInventoryQuantityColumn" prefWidth="90.0" text="Available"/>
+                                    </columns>
+                                </TableView>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0">
+                                        <Label text="Quantity" styleClass="stock-form-label"/>
+                                        <TextField fx:id="dispatchQuantityField" prefWidth="110.0" promptText="Qty"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Destination" styleClass="stock-form-label"/>
+                                        <TextField fx:id="dispatchDestinationField" promptText="Destination name"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Reference / Note" styleClass="stock-form-label"/>
+                                        <TextField fx:id="dispatchNoteField" promptText="Optional dispatch note"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <Button fx:id="addDispatchLineButton" mnemonicParsing="false" onAction="#handleAddDispatchLine" text="Add Dispatch Line"/>
+                                    <Button fx:id="removeDispatchLineButton" mnemonicParsing="false" onAction="#handleRemoveDispatchLine" text="Remove Line"/>
+                                    <Button fx:id="clearDispatchDraftButton" mnemonicParsing="false" onAction="#handleClearDispatchDraft" text="Clear Draft"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button fx:id="recordDispatchButton" mnemonicParsing="false" onAction="#handleRecordDispatch" text="Record Dispatch"/>
+                                </HBox>
+                                <TableView fx:id="dispatchDraftTable" prefHeight="150.0">
+                                    <columns>
+                                        <TableColumn fx:id="dispatchDraftCodeColumn" prefWidth="135.0" text="Code"/>
+                                        <TableColumn fx:id="dispatchDraftProductColumn" prefWidth="360.0" text="Product"/>
+                                        <TableColumn fx:id="dispatchDraftQuantityColumn" prefWidth="90.0" text="Qty"/>
+                                    </columns>
+                                </TableView>
+                                <Label fx:id="dispatchStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                            </VBox>
+                            <VBox spacing="12.0" styleClass="card">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <Label text="Inventory" styleClass="section-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="inventorySummaryLabel" styleClass="table-summary" text="Loading inventory..."/>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <TextField fx:id="inventorySearchField" HBox.hgrow="ALWAYS" promptText="Search by code or product"/>
+                                    <ComboBox fx:id="inventoryCategoryFilterSelector" prefWidth="170.0"/>
+                                    <ComboBox fx:id="inventoryManufacturerFilterSelector" prefWidth="190.0"/>
+                                    <Button mnemonicParsing="false" onAction="#handleInventorySearch" text="Apply"/>
+                                    <Button mnemonicParsing="false" onAction="#handleClearInventoryFilters" text="Clear"/>
+                                </HBox>
+                                <TableView fx:id="inventoryTable" prefHeight="260.0">
+                                    <columns>
+                                        <TableColumn fx:id="inventoryWarehouseColumn" prefWidth="150.0" text="Warehouse"/>
+                                        <TableColumn fx:id="inventoryCodeColumn" prefWidth="115.0" text="Code"/>
+                                        <TableColumn fx:id="inventoryProductColumn" prefWidth="210.0" text="Product"/>
+                                        <TableColumn fx:id="inventoryManufacturerColumn" prefWidth="120.0" text="Manufacturer"/>
+                                        <TableColumn fx:id="inventoryCategoryColumn" prefWidth="105.0" text="Category"/>
+                                        <TableColumn fx:id="inventoryQuantityColumn" prefWidth="70.0" text="Qty"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                            <VBox spacing="12.0" styleClass="card">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <Label text="Movement Logs" styleClass="section-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="movementLogSummaryLabel" styleClass="table-summary" text="Loading movement logs..."/>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <VBox spacing="6.0">
+                                        <Label text="Warehouse Filter" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="warehouseFilterSelector" prefWidth="220.0"/>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                        <Label text="Movement Type" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="movementTypeFilterSelector" prefWidth="160.0"/>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                        <Label text="From Date" styleClass="stock-form-label"/>
+                                        <DatePicker fx:id="movementFromDatePicker" prefWidth="150.0" promptText="From"/>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                        <Label text="To Date" styleClass="stock-form-label"/>
+                                        <DatePicker fx:id="movementToDatePicker" prefWidth="150.0" promptText="To"/>
+                                    </VBox>
+                                    <VBox alignment="BOTTOM_LEFT" spacing="8.0">
+                                        <Button mnemonicParsing="false" onAction="#handleApplyMovementFilters" text="Apply"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearMovementFilters" text="Clear"/>
+                                    </VBox>
+                                </HBox>
+                                <TableView fx:id="movementLogTable" prefHeight="300.0">
+                                    <columns>
+                                        <TableColumn fx:id="timestampColumn" prefWidth="155.0" text="Timestamp"/>
+                                        <TableColumn fx:id="movementTypeColumn" prefWidth="120.0" text="Type"/>
+                                        <TableColumn fx:id="productColumn" prefWidth="200.0" text="Product"/>
+                                        <TableColumn fx:id="manufacturerColumn" prefWidth="120.0" text="Manufacturer"/>
+                                        <TableColumn fx:id="quantityColumn" prefWidth="80.0" text="Qty"/>
+                                        <TableColumn fx:id="sourceWarehouseColumn" prefWidth="145.0" text="Source"/>
+                                        <TableColumn fx:id="destinationWarehouseColumn" prefWidth="145.0" text="Destination"/>
+                                        <TableColumn fx:id="userColumn" prefWidth="120.0" text="User"/>
+                                        <TableColumn fx:id="detailsColumn" prefWidth="200.0" text="Details"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+                <ScrollPane fx:id="requestsScrollPane" fitToWidth="true" hbarPolicy="NEVER" managed="false" styleClass="main-scroll" visible="false">
+                    <content>
+                        <VBox fx:id="requestsPage" managed="false" spacing="18.0" styleClass="page-column" visible="false">
+                            <padding>
+                                <Insets top="24.0" right="24.0" bottom="24.0" left="8.0"/>
+                            </padding>
+                            <VBox spacing="12.0" styleClass="card">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <Label fx:id="requestEditorTitleLabel" text="Create / Edit Request" styleClass="section-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label text="Build new transfer requests here, or load a pending outgoing request to edit it." styleClass="table-summary"/>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Source" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="requestSourceWarehouseSelector"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Target" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="requestTargetWarehouseSelector"/>
+                                    </VBox>
+                                </HBox>
+                                <VBox spacing="8.0">
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                        <Label text="Target Warehouse Inventory" styleClass="stock-form-label"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="requestInventorySummaryLabel" styleClass="table-summary" text="Select a target warehouse."/>
+                                    </HBox>
+                                    <TextField fx:id="requestInventorySearchField" promptText="Search target inventory by product code or product name"/>
+                                    <TableView fx:id="requestInventoryTable" prefHeight="190.0">
+                                        <columns>
+                                            <TableColumn fx:id="requestInventoryCodeColumn" prefWidth="130.0" text="Code"/>
+                                            <TableColumn fx:id="requestInventoryProductColumn" prefWidth="330.0" text="Product"/>
+                                            <TableColumn fx:id="requestInventoryManufacturerColumn" prefWidth="140.0" text="Manufacturer"/>
+                                            <TableColumn fx:id="requestInventoryCategoryColumn" prefWidth="125.0" text="Category"/>
+                                            <TableColumn fx:id="requestInventoryQuantityColumn" prefWidth="95.0" text="Available"/>
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0">
+                                        <Label text="Quantity" styleClass="stock-form-label"/>
+                                        <TextField fx:id="requestQuantityField" prefWidth="110.0" promptText="Qty"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Request Note" styleClass="stock-form-label"/>
+                                        <TextField fx:id="requestNoteField" promptText="Optional request note"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <Button fx:id="addRequestLineButton" mnemonicParsing="false" onAction="#handleAddRequestLine" text="Add Line"/>
+                                    <Button fx:id="removeRequestLineButton" mnemonicParsing="false" onAction="#handleRemoveRequestLine" text="Remove Line"/>
+                                    <Button fx:id="clearRequestDraftButton" mnemonicParsing="false" onAction="#handleClearRequestDraft" text="Clear Draft"/>
+                                </HBox>
+                                <TableView fx:id="requestDraftTable" prefHeight="140.0">
+                                    <columns>
+                                        <TableColumn fx:id="requestDraftCodeColumn" prefWidth="120.0" text="Code"/>
+                                        <TableColumn fx:id="requestDraftProductColumn" prefWidth="320.0" text="Product"/>
+                                        <TableColumn fx:id="requestDraftQuantityColumn" prefWidth="80.0" text="Qty"/>
+                                    </columns>
+                                </TableView>
+                                <HBox spacing="10.0">
+                                    <Button fx:id="createRequestButton" mnemonicParsing="false" onAction="#handleCreateRequest" text="Create Request"/>
+                                    <Button fx:id="saveRequestEditsButton" mnemonicParsing="false" onAction="#handleSaveRequestEdits" text="Save Pending Edits"/>
+                                </HBox>
+                                <Label fx:id="requestActionStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                            </VBox>
+                            <HBox spacing="16.0">
+                                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                        <Label text="Request Views" styleClass="section-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <HBox spacing="8.0" styleClass="request-view-strip">
+                                            <Button fx:id="requestIncomingViewButton" mnemonicParsing="false" onAction="#handleShowIncomingRequests" text="Incoming"/>
+                                            <Button fx:id="requestOutgoingViewButton" mnemonicParsing="false" onAction="#handleShowOutgoingRequests" text="Outgoing"/>
+                                            <Button fx:id="requestHistoryViewButton" mnemonicParsing="false" onAction="#handleShowRequestHistory" text="History"/>
+                                        </HBox>
+                                    </HBox>
+                                    <Label fx:id="requestSummaryLabel" styleClass="table-summary" text="Loading requests..."/>
+                                    <HBox spacing="10.0">
+                                        <Button fx:id="editSelectedRequestButton" mnemonicParsing="false" onAction="#handleEditSelectedRequest" text="Load Selected for Edit"/>
+                                        <Button fx:id="cancelSelectedRequestButton" mnemonicParsing="false" onAction="#handleCancelSelectedRequest" text="Cancel Selected"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="approveRequestButton" mnemonicParsing="false" onAction="#handleApproveRequest" text="Approve Selected"/>
+                                        <Button fx:id="rejectRequestButton" mnemonicParsing="false" onAction="#handleRejectRequest" text="Reject Selected"/>
+                                    </HBox>
+                                    <TableView fx:id="requestTable" prefHeight="280.0">
+                                        <columns>
+                                            <TableColumn fx:id="requestNumberColumn" prefWidth="90.0" text="Request"/>
+                                            <TableColumn fx:id="requestSourceColumn" prefWidth="120.0" text="From"/>
+                                            <TableColumn fx:id="requestDestinationColumn" prefWidth="120.0" text="To"/>
+                                            <TableColumn fx:id="requestRequestedByColumn" prefWidth="110.0" text="Requested By"/>
+                                            <TableColumn fx:id="requestStatusColumn" prefWidth="90.0" text="Status"/>
+                                            <TableColumn fx:id="requestLineCountColumn" prefWidth="55.0" text="Lines"/>
+                                            <TableColumn fx:id="requestTotalQuantityColumn" prefWidth="60.0" text="Qty"/>
+                                            <TableColumn fx:id="requestCreatedAtColumn" prefWidth="145.0" text="Created"/>
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                        <Label text="Request Details" styleClass="section-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="requestDetailNumberLabel" styleClass="table-summary" text="No request selected"/>
+                                    </HBox>
+                                    <HBox spacing="12.0">
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Status" styleClass="stock-form-label"/>
+                                            <Label fx:id="requestDetailStatusLabel" styleClass="card-body" text="-"/>
+                                        </VBox>
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Route" styleClass="stock-form-label"/>
+                                            <Label fx:id="requestDetailRouteLabel" styleClass="card-body" text="-"/>
+                                        </VBox>
+                                    </HBox>
+                                    <VBox spacing="6.0">
+                                        <Label text="Users" styleClass="stock-form-label"/>
+                                        <Label fx:id="requestDetailUsersLabel" styleClass="card-body" text="-" wrapText="true"/>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                        <Label text="Note" styleClass="stock-form-label"/>
+                                        <Label fx:id="requestDetailNoteLabel" styleClass="card-body" text="Select a request to inspect its note and requested items." wrapText="true"/>
+                                    </VBox>
+                                    <Label fx:id="requestDetailUpdatedAtLabel" styleClass="table-summary" text="-"/>
+                                    <TableView fx:id="requestDetailLineTable" prefHeight="210.0">
+                                        <columns>
+                                            <TableColumn fx:id="requestDetailCodeColumn" prefWidth="110.0" text="Code"/>
+                                            <TableColumn fx:id="requestDetailProductColumn" prefWidth="300.0" text="Product"/>
+                                            <TableColumn fx:id="requestDetailRequestedColumn" prefWidth="90.0" text="Requested"/>
+                                            <TableColumn fx:id="requestDetailApprovedColumn" prefWidth="90.0" text="Approved"/>
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+                <ScrollPane fx:id="catalogScrollPane" fitToWidth="true" hbarPolicy="NEVER" managed="false" styleClass="main-scroll" visible="false">
+                    <content>
+                        <VBox fx:id="catalogPage" managed="false" spacing="18.0" styleClass="page-column" visible="false">
+                            <padding>
+                                <Insets top="24.0" right="24.0" bottom="24.0" left="8.0"/>
+                            </padding>
+                            <VBox spacing="12.0" styleClass="card">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <Label text="Products" styleClass="section-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="productSummaryLabel" styleClass="table-summary" text="Loading products..."/>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <TextField fx:id="productSearchField" HBox.hgrow="ALWAYS" promptText="Search by code or model"/>
+                                    <Button mnemonicParsing="false" onAction="#handleProductSearch" text="Search"/>
+                                    <Button mnemonicParsing="false" onAction="#handleClearProductSearch" text="Clear"/>
+                                </HBox>
+                                <TableView fx:id="productTable" prefHeight="220.0">
+                                    <columns>
+                                        <TableColumn fx:id="productCodeColumn" prefWidth="120.0" text="Code"/>
+                                        <TableColumn fx:id="productModelColumn" prefWidth="220.0" text="Model"/>
+                                        <TableColumn fx:id="productManufacturerColumn" prefWidth="130.0" text="Manufacturer"/>
+                                        <TableColumn fx:id="productCategoryColumn" prefWidth="120.0" text="Category"/>
+                                        <TableColumn fx:id="productUnitColumn" prefWidth="80.0" text="Unit"/>
+                                        <TableColumn fx:id="productActiveColumn" prefWidth="80.0" text="Active"/>
+                                    </columns>
+                                </TableView>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0">
+                                        <Label text="Code" styleClass="stock-form-label"/>
+                                        <TextField fx:id="productCodeField" prefWidth="140.0" promptText="CPU-INT-14700K"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Model Name" styleClass="stock-form-label"/>
+                                        <TextField fx:id="productModelField" promptText="Product model"/>
+                                    </VBox>
+                                    <VBox spacing="6.0">
+                                        <Label text="Unit" styleClass="stock-form-label"/>
+                                        <TextField fx:id="productUnitField" prefWidth="90.0" promptText="pcs"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Manufacturer" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="productManufacturerSelector"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Category" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="productCategorySelector"/>
+                                    </VBox>
+                                </HBox>
+                                <VBox spacing="6.0">
+                                    <Label text="Description" styleClass="stock-form-label"/>
+                                    <TextField fx:id="productDescriptionField" promptText="Optional product description"/>
+                                </VBox>
+                                <HBox spacing="10.0">
+                                    <Button fx:id="createProductButton" mnemonicParsing="false" onAction="#handleCreateProduct" text="Add Product"/>
+                                    <Button fx:id="updateProductButton" mnemonicParsing="false" onAction="#handleUpdateProduct" text="Update Selected"/>
+                                    <Button fx:id="deleteProductButton" mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete Selected"/>
+                                    <Button mnemonicParsing="false" onAction="#handleClearProductForm" text="Clear Form"/>
+                                </HBox>
+                                <Label fx:id="productStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                            </VBox>
+                            <HBox spacing="16.0">
+                                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                        <Label text="Categories" styleClass="section-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="categorySummaryLabel" styleClass="table-summary" text="Loading categories..."/>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <TextField fx:id="categorySearchField" HBox.hgrow="ALWAYS" promptText="Search categories"/>
+                                        <Button mnemonicParsing="false" onAction="#handleCategorySearch" text="Search"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearCategorySearch" text="Clear"/>
+                                    </HBox>
+                                    <TableView fx:id="categoryTable" prefHeight="180.0">
+                                        <columns>
+                                            <TableColumn fx:id="categoryNameColumn" prefWidth="260.0" text="Category"/>
+                                        </columns>
+                                    </TableView>
+                                    <VBox spacing="6.0">
+                                        <Label text="Category Name" styleClass="stock-form-label"/>
+                                        <TextField fx:id="categoryNameField" promptText="Category name"/>
+                                    </VBox>
+                                    <HBox spacing="10.0">
+                                        <Button fx:id="createCategoryButton" mnemonicParsing="false" onAction="#handleCreateCategory" text="Add Category"/>
+                                        <Button fx:id="updateCategoryButton" mnemonicParsing="false" onAction="#handleUpdateCategory" text="Update Selected"/>
+                                        <Button fx:id="deleteCategoryButton" mnemonicParsing="false" onAction="#handleDeleteCategory" text="Delete Selected"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearCategoryForm" text="Clear Form"/>
+                                    </HBox>
+                                    <Label fx:id="categoryStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                        <Label text="Manufacturers" styleClass="section-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="manufacturerSummaryLabel" styleClass="table-summary" text="Loading manufacturers..."/>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <TextField fx:id="manufacturerSearchField" HBox.hgrow="ALWAYS" promptText="Search manufacturers"/>
+                                        <Button mnemonicParsing="false" onAction="#handleManufacturerSearch" text="Search"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearManufacturerSearch" text="Clear"/>
+                                    </HBox>
+                                    <TableView fx:id="manufacturerTable" prefHeight="180.0">
+                                        <columns>
+                                            <TableColumn fx:id="manufacturerNameColumn" prefWidth="260.0" text="Manufacturer"/>
+                                        </columns>
+                                    </TableView>
+                                    <VBox spacing="6.0">
+                                        <Label text="Manufacturer Name" styleClass="stock-form-label"/>
+                                        <TextField fx:id="manufacturerNameField" promptText="Manufacturer name"/>
+                                    </VBox>
+                                    <HBox spacing="10.0">
+                                        <Button fx:id="createManufacturerButton" mnemonicParsing="false" onAction="#handleCreateManufacturer" text="Add Manufacturer"/>
+                                        <Button fx:id="updateManufacturerButton" mnemonicParsing="false" onAction="#handleUpdateManufacturer" text="Update Selected"/>
+                                        <Button fx:id="deleteManufacturerButton" mnemonicParsing="false" onAction="#handleDeleteManufacturer" text="Delete Selected"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearManufacturerForm" text="Clear Form"/>
+                                    </HBox>
+                                    <Label fx:id="manufacturerStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+                <ScrollPane fx:id="reportsScrollPane" fitToWidth="true" hbarPolicy="NEVER" managed="false" styleClass="main-scroll" visible="false">
+                    <content>
+                        <VBox fx:id="reportsPage" managed="false" spacing="18.0" styleClass="page-column" visible="false">
+                            <padding>
+                                <Insets top="24.0" right="24.0" bottom="24.0" left="8.0"/>
+                            </padding>
+                            <VBox spacing="12.0" styleClass="card">
+                                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                    <Label text="Inventory Report" styleClass="section-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="reportSummaryLabel" styleClass="table-summary" text="Loading report..."/>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Warehouse" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="reportWarehouseSelector"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Category" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="reportCategorySelector"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Manufacturer" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="reportManufacturerSelector"/>
+                                    </VBox>
+                                    <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                        <Label text="Sort By" styleClass="stock-form-label"/>
+                                        <ComboBox fx:id="reportSortSelector"/>
+                                    </VBox>
+                                    <VBox alignment="BOTTOM_LEFT" spacing="10.0">
+                                        <Button mnemonicParsing="false" onAction="#handleRefreshReport" text="Refresh"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearReportFilters" text="Clear"/>
+                                    </VBox>
+                                </HBox>
+                                <TableView fx:id="reportTable" prefHeight="360.0">
+                                    <columns>
+                                        <TableColumn fx:id="reportWarehouseColumn" prefWidth="160.0" text="Warehouse"/>
+                                        <TableColumn fx:id="reportCodeColumn" prefWidth="120.0" text="Code"/>
+                                        <TableColumn fx:id="reportProductColumn" prefWidth="220.0" text="Product"/>
+                                        <TableColumn fx:id="reportManufacturerColumn" prefWidth="130.0" text="Manufacturer"/>
+                                        <TableColumn fx:id="reportCategoryColumn" prefWidth="120.0" text="Category"/>
+                                        <TableColumn fx:id="reportQuantityColumn" prefWidth="90.0" text="Qty"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+                <ScrollPane fx:id="adminScrollPane" fitToWidth="true" hbarPolicy="NEVER" managed="false" styleClass="main-scroll" visible="false">
+                    <content>
+                        <VBox fx:id="adminPage" managed="false" spacing="18.0" styleClass="page-column" visible="false">
+                            <padding>
+                                <Insets top="24.0" right="24.0" bottom="24.0" left="8.0"/>
+                            </padding>
+                            <HBox spacing="16.0">
+                                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                        <Label text="Warehouses" styleClass="section-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="warehouseSummaryLabel" styleClass="table-summary" text="Loading warehouses..."/>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <TextField fx:id="warehouseSearchField" HBox.hgrow="ALWAYS" promptText="Search by code, name, or city"/>
+                                        <Button mnemonicParsing="false" onAction="#handleWarehouseSearch" text="Search"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearWarehouseSearch" text="Clear"/>
+                                    </HBox>
+                                    <TableView fx:id="warehouseTable" prefHeight="170.0">
+                                        <columns>
+                                            <TableColumn fx:id="warehouseCodeColumn" prefWidth="75.0" text="Code"/>
+                                            <TableColumn fx:id="warehouseNameColumn" prefWidth="170.0" text="Name"/>
+                                            <TableColumn fx:id="warehouseCityColumn" prefWidth="110.0" text="City"/>
+                                            <TableColumn fx:id="warehouseAddressColumn" prefWidth="230.0" text="Address"/>
+                                            <TableColumn fx:id="warehouseActiveColumn" prefWidth="70.0" text="Active"/>
+                                        </columns>
+                                    </TableView>
+                                    <HBox spacing="10.0">
+                                        <VBox spacing="6.0">
+                                            <Label text="Code" styleClass="stock-form-label"/>
+                                            <TextField fx:id="warehouseCodeField" prefWidth="90.0" promptText="A"/>
+                                        </VBox>
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Name" styleClass="stock-form-label"/>
+                                            <TextField fx:id="warehouseNameField" promptText="Warehouse name"/>
+                                        </VBox>
+                                        <VBox spacing="6.0">
+                                            <Label text="City" styleClass="stock-form-label"/>
+                                            <TextField fx:id="warehouseCityField" prefWidth="120.0" promptText="City"/>
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Address" styleClass="stock-form-label"/>
+                                            <TextField fx:id="warehouseAddressField" promptText="Address line"/>
+                                        </VBox>
+                                        <VBox spacing="6.0">
+                                            <Label text="Status" styleClass="stock-form-label"/>
+                                            <ComboBox fx:id="warehouseActiveSelector" prefWidth="120.0"/>
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <Button fx:id="createWarehouseButton" mnemonicParsing="false" onAction="#handleCreateWarehouse" text="Add Warehouse"/>
+                                        <Button fx:id="updateWarehouseButton" mnemonicParsing="false" onAction="#handleUpdateWarehouse" text="Update Selected"/>
+                                        <Button fx:id="deleteWarehouseButton" mnemonicParsing="false" onAction="#handleDeleteWarehouse" text="Delete Selected"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearWarehouseForm" text="Clear Form"/>
+                                    </HBox>
+                                    <Label fx:id="warehouseStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                                </VBox>
+                                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                        <Label text="Users" styleClass="section-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="userSummaryLabel" styleClass="table-summary" text="Loading users..."/>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <TextField fx:id="userSearchField" HBox.hgrow="ALWAYS" promptText="Search by username or full name"/>
+                                        <Button mnemonicParsing="false" onAction="#handleUserSearch" text="Search"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearUserSearch" text="Clear"/>
+                                    </HBox>
+                                    <TableView fx:id="userTable" prefHeight="170.0">
+                                        <columns>
+                                            <TableColumn fx:id="userUsernameColumn" prefWidth="110.0" text="Username"/>
+                                            <TableColumn fx:id="userFullNameColumn" prefWidth="170.0" text="Full Name"/>
+                                            <TableColumn fx:id="userRoleColumn" prefWidth="140.0" text="Role"/>
+                                            <TableColumn fx:id="userWarehouseColumn" prefWidth="150.0" text="Warehouse"/>
+                                            <TableColumn fx:id="userActiveColumn" prefWidth="70.0" text="Active"/>
+                                        </columns>
+                                    </TableView>
+                                    <HBox spacing="10.0">
+                                        <VBox spacing="6.0">
+                                            <Label text="Username" styleClass="stock-form-label"/>
+                                            <TextField fx:id="userUsernameField" prefWidth="120.0" promptText="username"/>
+                                        </VBox>
+                                        <VBox spacing="6.0">
+                                            <Label text="Password" styleClass="stock-form-label"/>
+                                            <TextField fx:id="userPasswordField" prefWidth="120.0" promptText="Create or reset"/>
+                                        </VBox>
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Full Name" styleClass="stock-form-label"/>
+                                            <TextField fx:id="userFullNameField" promptText="Full name"/>
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Role" styleClass="stock-form-label"/>
+                                            <ComboBox fx:id="userRoleSelector"/>
+                                        </VBox>
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <Label text="Warehouse" styleClass="stock-form-label"/>
+                                            <ComboBox fx:id="userWarehouseSelector"/>
+                                        </VBox>
+                                        <VBox spacing="6.0">
+                                            <Label text="Status" styleClass="stock-form-label"/>
+                                            <ComboBox fx:id="userActiveSelector" prefWidth="120.0"/>
+                                        </VBox>
+                                    </HBox>
+                                    <HBox spacing="10.0">
+                                        <Button fx:id="createUserButton" mnemonicParsing="false" onAction="#handleCreateUser" text="Add User"/>
+                                        <Button fx:id="updateUserButton" mnemonicParsing="false" onAction="#handleUpdateUser" text="Update Selected"/>
+                                        <Button fx:id="deleteUserButton" mnemonicParsing="false" onAction="#handleDeleteUser" text="Delete Selected"/>
+                                        <Button mnemonicParsing="false" onAction="#handleClearUserForm" text="Clear Form"/>
+                                    </HBox>
+                                    <Label fx:id="userStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </children>
+        </StackPane>
+    </center>
+</BorderPane>

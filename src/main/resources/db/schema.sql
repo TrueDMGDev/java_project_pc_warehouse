@@ -1,0 +1,2 @@
+-- Legacy manual schema entry point.
+-- Flyway now manages schema creation from classpath:db/migration/V1__schema.sql.
