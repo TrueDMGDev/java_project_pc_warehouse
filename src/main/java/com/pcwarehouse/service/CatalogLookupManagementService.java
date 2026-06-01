@@ -55,6 +55,14 @@ public final class CatalogLookupManagementService {
         return deleteLookup(session, record, false);
     }
 
+    public CatalogLookupChangeResult forceDeleteCategory(UserSession session, CatalogLookupRecord record) {
+        return forceDeleteLookup(session, record, true);
+    }
+
+    public CatalogLookupChangeResult forceDeleteManufacturer(UserSession session, CatalogLookupRecord record) {
+        return forceDeleteLookup(session, record, false);
+    }
+
     private CatalogLookupChangeResult createLookup(UserSession session, String name, boolean category) {
         if (!canManageCatalog(session)) {
             return new CatalogLookupChangeResult(false, "Only admin can manage catalog reference data.");
@@ -117,6 +125,38 @@ public final class CatalogLookupManagementService {
             return new CatalogLookupChangeResult(true, "Deleted " + label(category).toLowerCase() + " " + record.name() + ".");
         } catch (SQLException exception) {
             return new CatalogLookupChangeResult(false, "Delete failed: " + describeConstraintIssue(exception, category));
+        }
+    }
+
+    private CatalogLookupChangeResult forceDeleteLookup(UserSession session, CatalogLookupRecord record, boolean category) {
+        if (!canManageCatalog(session)) {
+            return new CatalogLookupChangeResult(false, "Only admin can manage catalog reference data.");
+        }
+        if (record == null) {
+            return new CatalogLookupChangeResult(false, "Select a " + label(category).toLowerCase() + " row to force delete.");
+        }
+
+        try (Connection connection = DatabaseConnection.open()) {
+            connection.setAutoCommit(false);
+            try {
+                if (category) {
+                    repository.forceDeleteCategory(connection, record.name());
+                } else {
+                    repository.forceDeleteManufacturer(connection, record.name());
+                }
+                connection.commit();
+                return new CatalogLookupChangeResult(
+                        true,
+                        "Force deleted " + label(category).toLowerCase() + " " + record.name() + " and related records."
+                );
+            } catch (SQLException exception) {
+                connection.rollback();
+                return new CatalogLookupChangeResult(false, "Force delete failed: " + describeConstraintIssue(exception, category));
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException exception) {
+            return new CatalogLookupChangeResult(false, "Force delete failed: " + describeConstraintIssue(exception, category));
         }
     }
 

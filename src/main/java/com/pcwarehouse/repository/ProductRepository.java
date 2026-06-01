@@ -144,6 +144,29 @@ public final class ProductRepository {
         }
     }
 
+    public void forceDeleteProduct(Connection connection, String productCode) throws SQLException {
+        deleteByProductCode(connection, """
+                DELETE FROM stock_movements
+                WHERE product_id = (SELECT product_id FROM products WHERE product_code = ?)
+                """, productCode);
+        deleteByProductCode(connection, """
+                DELETE FROM request_items
+                WHERE product_id = (SELECT product_id FROM products WHERE product_code = ?)
+                """, productCode);
+        deleteByProductCode(connection, """
+                DELETE FROM inventory
+                WHERE product_id = (SELECT product_id FROM products WHERE product_code = ?)
+                """, productCode);
+        deleteProduct(connection, productCode);
+    }
+
+    private void deleteByProductCode(Connection connection, String sql, String productCode) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, productCode);
+            statement.executeUpdate();
+        }
+    }
+
     private List<String> findLookupValues(Connection connection, String sql) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {

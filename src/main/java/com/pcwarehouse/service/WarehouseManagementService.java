@@ -122,6 +122,37 @@ public final class WarehouseManagementService {
         }
     }
 
+    public WarehouseChangeResult forceDeleteWarehouse(UserSession session, WarehouseRecord warehouse) {
+        if (!canManageWarehouses(session)) {
+            return new WarehouseChangeResult(false, "Only admin can force delete warehouses.");
+        }
+        if (warehouse == null) {
+            return new WarehouseChangeResult(false, "Select a warehouse row to force delete.");
+        }
+        if (session.warehouse() != null && warehouse.warehouseCode().equals(session.warehouse().code())) {
+            return new WarehouseChangeResult(false, "Use a different admin account to force delete the current warehouse.");
+        }
+
+        try (Connection connection = DatabaseConnection.open()) {
+            connection.setAutoCommit(false);
+            try {
+                warehouseRepository.forceDeleteWarehouse(connection, warehouse.warehouseCode());
+                connection.commit();
+                return new WarehouseChangeResult(
+                        true,
+                        "Force deleted warehouse " + warehouse.warehouseCode() + " and related records."
+                );
+            } catch (SQLException exception) {
+                connection.rollback();
+                return new WarehouseChangeResult(false, "Force delete failed: " + describeConstraintIssue(exception, "warehouse"));
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException exception) {
+            return new WarehouseChangeResult(false, "Force delete failed: " + describeConstraintIssue(exception, "warehouse"));
+        }
+    }
+
     private boolean canManageWarehouses(UserSession session) {
         return session != null && session.role() == Role.ADMIN;
     }

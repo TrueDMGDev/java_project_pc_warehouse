@@ -135,6 +135,31 @@ public final class ProductManagementService {
         }
     }
 
+    public ProductChangeResult forceDeleteProduct(UserSession session, ProductRecord product) {
+        if (!canManageProducts(session)) {
+            return new ProductChangeResult(false, "Only admin can force delete products.");
+        }
+        if (product == null) {
+            return new ProductChangeResult(false, "Select a product row to force delete.");
+        }
+
+        try (Connection connection = DatabaseConnection.open()) {
+            connection.setAutoCommit(false);
+            try {
+                productRepository.forceDeleteProduct(connection, product.productCode());
+                connection.commit();
+                return new ProductChangeResult(true, "Force deleted product " + product.productCode() + " and related records.");
+            } catch (SQLException exception) {
+                connection.rollback();
+                return new ProductChangeResult(false, "Force delete failed: " + exception.getMessage());
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException exception) {
+            return new ProductChangeResult(false, "Force delete failed: " + exception.getMessage());
+        }
+    }
+
     private boolean canManageProducts(UserSession session) {
         return session != null && session.role() == Role.ADMIN;
     }

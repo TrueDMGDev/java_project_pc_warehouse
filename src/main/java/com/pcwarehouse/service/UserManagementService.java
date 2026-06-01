@@ -141,6 +141,34 @@ public final class UserManagementService {
         }
     }
 
+    public UserChangeResult forceDeleteUser(UserSession session, ManagedUserRecord user) {
+        if (!canManageUsers(session)) {
+            return new UserChangeResult(false, "Only admin can force delete users.");
+        }
+        if (user == null) {
+            return new UserChangeResult(false, "Select a user row to force delete.");
+        }
+        if (session.username().equals(user.username())) {
+            return new UserChangeResult(false, "Use a different admin account to force delete the currently signed-in user.");
+        }
+
+        try (Connection connection = DatabaseConnection.open()) {
+            connection.setAutoCommit(false);
+            try {
+                userManagementRepository.forceDeleteUser(connection, user.username());
+                connection.commit();
+                return new UserChangeResult(true, "Force deleted user " + user.username() + " and related records.");
+            } catch (SQLException exception) {
+                connection.rollback();
+                return new UserChangeResult(false, "Force delete failed: " + describeConstraintIssue(exception));
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException exception) {
+            return new UserChangeResult(false, "Force delete failed: " + describeConstraintIssue(exception));
+        }
+    }
+
     private boolean canManageUsers(UserSession session) {
         return session != null && session.role().canManageUsers();
     }

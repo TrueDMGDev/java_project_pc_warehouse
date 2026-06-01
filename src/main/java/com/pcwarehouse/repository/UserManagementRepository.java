@@ -190,4 +190,55 @@ public final class UserManagementRepository {
             statement.executeUpdate();
         }
     }
+
+    public void forceDeleteUser(Connection connection, String username) throws SQLException {
+        deleteUserScopedRows(connection, """
+                WITH target_user AS (
+                    SELECT user_id FROM users WHERE username = ?
+                ),
+                target_requests AS (
+                    SELECT request_id
+                    FROM requests
+                    WHERE requested_by_user_id IN (SELECT user_id FROM target_user)
+                       OR approved_by_user_id IN (SELECT user_id FROM target_user)
+                )
+                DELETE FROM stock_movements
+                WHERE performed_by_user_id IN (SELECT user_id FROM target_user)
+                   OR request_id IN (SELECT request_id FROM target_requests)
+                """, username);
+        deleteUserScopedRows(connection, """
+                WITH target_user AS (
+                    SELECT user_id FROM users WHERE username = ?
+                ),
+                target_requests AS (
+                    SELECT request_id
+                    FROM requests
+                    WHERE requested_by_user_id IN (SELECT user_id FROM target_user)
+                       OR approved_by_user_id IN (SELECT user_id FROM target_user)
+                )
+                DELETE FROM request_items
+                WHERE request_id IN (SELECT request_id FROM target_requests)
+                """, username);
+        deleteUserScopedRows(connection, """
+                WITH target_user AS (
+                    SELECT user_id FROM users WHERE username = ?
+                ),
+                target_requests AS (
+                    SELECT request_id
+                    FROM requests
+                    WHERE requested_by_user_id IN (SELECT user_id FROM target_user)
+                       OR approved_by_user_id IN (SELECT user_id FROM target_user)
+                )
+                DELETE FROM requests
+                WHERE request_id IN (SELECT request_id FROM target_requests)
+                """, username);
+        deleteUser(connection, username);
+    }
+
+    private void deleteUserScopedRows(Connection connection, String sql, String username) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            statement.executeUpdate();
+        }
+    }
 }

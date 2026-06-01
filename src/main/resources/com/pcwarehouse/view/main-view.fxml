@@ -513,6 +513,7 @@
                                     <Button fx:id="createProductButton" mnemonicParsing="false" onAction="#handleCreateProduct" text="Add Product"/>
                                     <Button fx:id="updateProductButton" mnemonicParsing="false" onAction="#handleUpdateProduct" text="Update Selected"/>
                                     <Button fx:id="deleteProductButton" mnemonicParsing="false" onAction="#handleDeleteProduct" text="Delete Selected"/>
+                                    <Button fx:id="forceDeleteProductButton" mnemonicParsing="false" onAction="#handleForceDeleteProduct" styleClass="danger-button" text="Force Delete (Cascade)"/>
                                     <Button mnemonicParsing="false" onAction="#handleClearProductForm" text="Clear Form"/>
                                 </HBox>
                                 <Label fx:id="productStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
@@ -542,6 +543,7 @@
                                         <Button fx:id="createCategoryButton" mnemonicParsing="false" onAction="#handleCreateCategory" text="Add Category"/>
                                         <Button fx:id="updateCategoryButton" mnemonicParsing="false" onAction="#handleUpdateCategory" text="Update Selected"/>
                                         <Button fx:id="deleteCategoryButton" mnemonicParsing="false" onAction="#handleDeleteCategory" text="Delete Selected"/>
+                                        <Button fx:id="forceDeleteCategoryButton" mnemonicParsing="false" onAction="#handleForceDeleteCategory" styleClass="danger-button" text="Force Delete (Cascade)"/>
                                         <Button mnemonicParsing="false" onAction="#handleClearCategoryForm" text="Clear Form"/>
                                     </HBox>
                                     <Label fx:id="categoryStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
@@ -570,6 +572,7 @@
                                         <Button fx:id="createManufacturerButton" mnemonicParsing="false" onAction="#handleCreateManufacturer" text="Add Manufacturer"/>
                                         <Button fx:id="updateManufacturerButton" mnemonicParsing="false" onAction="#handleUpdateManufacturer" text="Update Selected"/>
                                         <Button fx:id="deleteManufacturerButton" mnemonicParsing="false" onAction="#handleDeleteManufacturer" text="Delete Selected"/>
+                                        <Button fx:id="forceDeleteManufacturerButton" mnemonicParsing="false" onAction="#handleForceDeleteManufacturer" styleClass="danger-button" text="Force Delete (Cascade)"/>
                                         <Button mnemonicParsing="false" onAction="#handleClearManufacturerForm" text="Clear Form"/>
                                     </HBox>
                                     <Label fx:id="manufacturerStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
@@ -681,6 +684,7 @@
                                         <Button fx:id="createWarehouseButton" mnemonicParsing="false" onAction="#handleCreateWarehouse" text="Add Warehouse"/>
                                         <Button fx:id="updateWarehouseButton" mnemonicParsing="false" onAction="#handleUpdateWarehouse" text="Update Selected"/>
                                         <Button fx:id="deleteWarehouseButton" mnemonicParsing="false" onAction="#handleDeleteWarehouse" text="Delete Selected"/>
+                                        <Button fx:id="forceDeleteWarehouseButton" mnemonicParsing="false" onAction="#handleForceDeleteWarehouse" styleClass="danger-button" text="Force Delete (Cascade)"/>
                                         <Button mnemonicParsing="false" onAction="#handleClearWarehouseForm" text="Clear Form"/>
                                     </HBox>
                                     <Label fx:id="warehouseStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>
@@ -737,6 +741,7 @@
                                         <Button fx:id="createUserButton" mnemonicParsing="false" onAction="#handleCreateUser" text="Add User"/>
                                         <Button fx:id="updateUserButton" mnemonicParsing="false" onAction="#handleUpdateUser" text="Update Selected"/>
                                         <Button fx:id="deleteUserButton" mnemonicParsing="false" onAction="#handleDeleteUser" text="Delete Selected"/>
+                                        <Button fx:id="forceDeleteUserButton" mnemonicParsing="false" onAction="#handleForceDeleteUser" styleClass="danger-button" text="Force Delete (Cascade)"/>
                                         <Button mnemonicParsing="false" onAction="#handleClearUserForm" text="Clear Form"/>
                                     </HBox>
                                     <Label fx:id="userStatusLabel" styleClass="operation-status" text="Waiting for database connection..." wrapText="true"/>

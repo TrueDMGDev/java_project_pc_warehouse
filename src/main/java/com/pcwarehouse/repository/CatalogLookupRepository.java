@@ -43,6 +43,30 @@ public final class CatalogLookupRepository {
         deleteLookupRecord(connection, "manufacturers", "manufacturer_name", name);
     }
 
+    public void forceDeleteCategory(Connection connection, String name) throws SQLException {
+        forceDeleteProductsForLookup(
+                connection,
+                "categories",
+                "category_id",
+                "category_name",
+                "category_id",
+                name
+        );
+        deleteCategory(connection, name);
+    }
+
+    public void forceDeleteManufacturer(Connection connection, String name) throws SQLException {
+        forceDeleteProductsForLookup(
+                connection,
+                "manufacturers",
+                "manufacturer_id",
+                "manufacturer_name",
+                "manufacturer_id",
+                name
+        );
+        deleteManufacturer(connection, name);
+    }
+
     private List<CatalogLookupRecord> findLookupRecords(
             Connection connection,
             String tableName,
@@ -98,6 +122,39 @@ public final class CatalogLookupRepository {
 
     private void deleteLookupRecord(Connection connection, String tableName, String columnName, String name) throws SQLException {
         String sql = "DELETE FROM " + tableName + " WHERE " + columnName + " = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, name);
+            statement.executeUpdate();
+        }
+    }
+
+    private void forceDeleteProductsForLookup(
+            Connection connection,
+            String lookupTable,
+            String lookupIdColumn,
+            String lookupNameColumn,
+            String productLookupColumn,
+            String name
+    ) throws SQLException {
+        String productIdQuery = """
+                SELECT p.product_id
+                FROM products p
+                JOIN %s l ON l.%s = p.%s
+                WHERE l.%s = ?
+                """.formatted(lookupTable, lookupIdColumn, productLookupColumn, lookupNameColumn);
+
+        deleteByLookupName(connection, "DELETE FROM stock_movements WHERE product_id IN (" + productIdQuery + ")", name);
+        deleteByLookupName(connection, "DELETE FROM request_items WHERE product_id IN (" + productIdQuery + ")", name);
+        deleteByLookupName(connection, "DELETE FROM inventory WHERE product_id IN (" + productIdQuery + ")", name);
+        deleteByLookupName(
+                connection,
+                "DELETE FROM products WHERE " + productLookupColumn
+                        + " = (SELECT " + lookupIdColumn + " FROM " + lookupTable + " WHERE " + lookupNameColumn + " = ?)",
+                name
+        );
+    }
+
+    private void deleteByLookupName(Connection connection, String sql, String name) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, name);
             statement.executeUpdate();

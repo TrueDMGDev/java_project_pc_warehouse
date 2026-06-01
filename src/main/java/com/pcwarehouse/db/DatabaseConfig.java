@@ -24,6 +24,11 @@ public final class DatabaseConfig {
         return PROPERTIES.getProperty("db.password", "postgres");
     }
 
+    public static String getSchema() {
+        String schema = PROPERTIES.getProperty("db.schema", getUsername()).trim();
+        return schema.isBlank() ? getUsername() : schema;
+    }
+
     public static boolean isFlywayEnabled() {
         return Boolean.parseBoolean(PROPERTIES.getProperty("db.flyway.enabled", "true"));
     }

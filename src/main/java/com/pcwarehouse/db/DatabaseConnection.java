@@ -10,11 +10,13 @@ public final class DatabaseConnection {
     }
 
     public static Connection open() throws SQLException {
-        return DriverManager.getConnection(
+        Connection connection = DriverManager.getConnection(
                 DatabaseConfig.getUrl(),
                 DatabaseConfig.getUsername(),
                 DatabaseConfig.getPassword()
         );
+        connection.setSchema(DatabaseConfig.getSchema());
+        return connection;
     }
 
     public static boolean canConnect() {
@@ -23,7 +25,8 @@ public final class DatabaseConnection {
 
     public static ConnectionStatus checkStatus() {
         try (Connection ignored = open()) {
-            return new ConnectionStatus(true, "Database online", "Connected to " + DatabaseConfig.getUrl());
+            return new ConnectionStatus(true, "Database online",
+                    "Connected to " + DatabaseConfig.getUrl() + " | schema: " + DatabaseConfig.getSchema());
         } catch (SQLException exception) {
             return new ConnectionStatus(false, "Database offline", describeFailure(exception));
         }

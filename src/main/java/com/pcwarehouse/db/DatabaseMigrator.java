@@ -19,12 +19,16 @@ public final class DatabaseMigrator {
 
         try {
             String[] locations = resolveLocations();
+            String schema = DatabaseConfig.getSchema();
             Flyway.configure()
                     .dataSource(
                             DatabaseConfig.getUrl(),
                             DatabaseConfig.getUsername(),
                             DatabaseConfig.getPassword()
                     )
+                    .schemas(schema)
+                    .defaultSchema(schema)
+                    .createSchemas(true)
                     .locations(locations)
                     .cleanDisabled(true)
                     .baselineOnMigrate(false)

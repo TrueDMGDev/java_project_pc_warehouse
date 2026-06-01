@@ -151,6 +151,15 @@
     -fx-background-color: #2f83bd;
 }
 
+.danger-button {
+    -fx-background-color: #b94035;
+    -fx-text-fill: white;
+}
+
+.danger-button:hover {
+    -fx-background-color: #cf574b;
+}
+
 .nav-card .nav-button {
     -fx-background-color: rgba(255, 255, 255, 0.58);
     -fx-text-fill: #15314a;

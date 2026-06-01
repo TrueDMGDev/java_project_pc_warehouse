@@ -139,4 +139,86 @@ public final class WarehouseRepository {
             statement.executeUpdate();
         }
     }
+
+    public void forceDeleteWarehouse(Connection connection, String warehouseCode) throws SQLException {
+        deleteWarehouseScopedRows(connection, """
+                WITH target_warehouse AS (
+                    SELECT warehouse_id FROM warehouses WHERE warehouse_code = ?
+                ),
+                target_users AS (
+                    SELECT user_id FROM users WHERE warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                ),
+                target_requests AS (
+                    SELECT request_id
+                    FROM requests
+                    WHERE from_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                       OR to_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                       OR requested_by_user_id IN (SELECT user_id FROM target_users)
+                       OR approved_by_user_id IN (SELECT user_id FROM target_users)
+                )
+                DELETE FROM stock_movements
+                WHERE source_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                   OR destination_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                   OR performed_by_user_id IN (SELECT user_id FROM target_users)
+                   OR request_id IN (SELECT request_id FROM target_requests)
+                """, warehouseCode);
+        deleteWarehouseScopedRows(connection, """
+                WITH target_warehouse AS (
+                    SELECT warehouse_id FROM warehouses WHERE warehouse_code = ?
+                ),
+                target_users AS (
+                    SELECT user_id FROM users WHERE warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                ),
+                target_requests AS (
+                    SELECT request_id
+                    FROM requests
+                    WHERE from_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                       OR to_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                       OR requested_by_user_id IN (SELECT user_id FROM target_users)
+                       OR approved_by_user_id IN (SELECT user_id FROM target_users)
+                )
+                DELETE FROM request_items
+                WHERE request_id IN (SELECT request_id FROM target_requests)
+                """, warehouseCode);
+        deleteWarehouseScopedRows(connection, """
+                WITH target_warehouse AS (
+                    SELECT warehouse_id FROM warehouses WHERE warehouse_code = ?
+                ),
+                target_users AS (
+                    SELECT user_id FROM users WHERE warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                ),
+                target_requests AS (
+                    SELECT request_id
+                    FROM requests
+                    WHERE from_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                       OR to_warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                       OR requested_by_user_id IN (SELECT user_id FROM target_users)
+                       OR approved_by_user_id IN (SELECT user_id FROM target_users)
+                )
+                DELETE FROM requests
+                WHERE request_id IN (SELECT request_id FROM target_requests)
+                """, warehouseCode);
+        deleteWarehouseScopedRows(connection, """
+                WITH target_warehouse AS (
+                    SELECT warehouse_id FROM warehouses WHERE warehouse_code = ?
+                )
+                DELETE FROM inventory
+                WHERE warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                """, warehouseCode);
+        deleteWarehouseScopedRows(connection, """
+                WITH target_warehouse AS (
+                    SELECT warehouse_id FROM warehouses WHERE warehouse_code = ?
+                )
+                DELETE FROM users
+                WHERE warehouse_id IN (SELECT warehouse_id FROM target_warehouse)
+                """, warehouseCode);
+        deleteWarehouse(connection, warehouseCode);
+    }
+
+    private void deleteWarehouseScopedRows(Connection connection, String sql, String warehouseCode) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, warehouseCode);
+            statement.executeUpdate();
+        }
+    }
 }
